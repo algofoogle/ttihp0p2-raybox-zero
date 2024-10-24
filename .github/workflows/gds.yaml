@@ -24,44 +24,44 @@ jobs:
   #      uses: TinyTapeout/tt-gds-action/precheck@tt09
 
   gl_test:
-   needs: gds
-   runs-on: ubuntu-24.04
-   env: 
+    needs: gds
+    runs-on: ubuntu-24.04
+    env:
       PDK_ROOT: ${{ github.workspace }}/IHP-Open-PDK
       TEST_DIR: ${{ github.workspace }}/test
-   steps:
-     - name: checkout repo
-       uses: actions/checkout@v4
-       with:
-         submodules: recursive
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-     - name: Download GDS artifact
-       uses: actions/download-artifact@v4
-       with:
-        name: tt_submission
+      - name: Download GDS artifact
+        uses: actions/download-artifact@v4
+        with:
+         name: tt_submission
 
-     - name: install PDK
-       uses: actions/checkout@v4
-       with:
-         repository: tinytapeout/IHP-Open-PDK
-         ref: tt
-         path: IHP-Open-PDK
+      - name: install PDK
+        uses: actions/checkout@v4
+        with:
+          repository: tinytapeout/IHP-Open-PDK
+          ref: tt
+          path: IHP-Open-PDK
 
-     - name: Setup python
-       uses: actions/setup-python@v5
-       with:
-         python-version: '3.11'
- 
-     - name: Install Python packages
-       shell: bash
-       run: pip install -r test/requirements.txt
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-     - name: ccache
-       uses: hendrikmuhs/ccache-action@v1.2
+      - name: Install Python packages
+        shell: bash
+        run: pip install -r test/requirements.txt
 
-     - name: Install iverilog
-       shell: bash
-       run: |
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+
+      - name: Install iverilog
+        shell: bash
+        run: |
           sudo apt-get update
           sudo apt-get install -y bison flex gperf libbz2-dev
           git clone https://github.com/steveicarus/iverilog
@@ -73,33 +73,67 @@ jobs:
           make
           sudo make install
 
-     - name: Run tests
-       shell: bash
-       run: |
-         cp tt_submission/*.v "$TEST_DIR/gate_level_netlist.v"
-         cd "$TEST_DIR"
-         rm -f tb.vcd results.xml
-         make clean
-         GATES=yes make
- 
-         # `make` will return success even if the tests fail, so check for failure in results.xml
-         test -f results.xml
-         ! grep failure results.xml
+      - name: Run tests
+        shell: bash
+        run: |
+          cp tt_submission/*.v "$TEST_DIR/gate_level_netlist.v"
+          cd "$TEST_DIR"
+          rm -f tb.vcd results.xml
+          make clean
+          GATES=yes make
 
-     - name: Upload VCD
-       if: always()
-       uses: actions/upload-artifact@v4
-       with:
-           name: gatelevel_test_vcd
-           path: |
-             ${{ env.TEST_DIR }}/tb.vcd
-             ${{ env.TEST_DIR }}/results.xml
+          # `make` will return success even if the tests fail, so check for failure in results.xml
+          test -f results.xml
+          ! grep failure results.xml
 
-     - name: Test Summary
-       if: always()
-       uses: test-summary/action@v2.3
-       with:
-         paths: ${{ env.TEST_DIR }}/results.xml    
+      - name: Upload VCD
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gatelevel_test_vcd
+          path: |
+            ${{ env.TEST_DIR }}/tb.vcd
+            ${{ env.TEST_DIR }}/results.xml
+
+      - name: Test Summary
+        if: always()
+        uses: test-summary/action@v2.3
+        with:
+          paths: ${{ env.TEST_DIR }}/results.xml
+
+      - name: Install ImageMagick
+        shell: bash
+        run: sudo apt-get update && sudo apt-get install -y imagemagick # ffmpeg
+
+      - name: Convert output frames from PPMs to PNGs
+        if: success() || failure() # Run this even if the step above fails.
+        shell: bash
+        run: |
+          pwd
+          ls -al
+          cd test
+          mkdir frames_out/png
+          cd frames_out
+          ../animate.sh png && cd png && tar czf ../frames.tgz *.png
+
+      - name: Convert output frames from PPMs to animated GIF
+        if: success() || failure() # Run this even if the step above fails.
+        shell: bash
+        run: |
+          pwd
+          ls -al
+          cd test
+          cd frames_out
+          ../animate.sh frames.gif
+
+      - name: Store frame output files
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frames-gl
+          path: |
+            test/frames_out/frames.tgz
+            test/frames_out/frames.gif
 
   viewer:
     needs: gds
@@ -108,4 +142,5 @@ jobs:
       pages: write      # to deploy to Pages
       id-token: write   # to verify the deployment originates from an appropriate source
     steps:
-      - uses: TinyTapeout/tt-gds-action/viewer@tt09
+      - name: Standard Tiny Tapeout preview
+        uses: TinyTapeout/tt-gds-action/viewer@tt09

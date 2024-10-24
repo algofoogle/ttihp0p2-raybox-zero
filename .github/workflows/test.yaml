@@ -38,19 +38,17 @@ jobs:
         if: always()
 
 
-      - name: Install ffmpeg and ImageMagick
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: ffmpeg imagemagick
-          version: ttihp0p2 # I think naming a version builds a reusable packages cache for that name.
-
-      - name: Convert output frames from PPMs to MP4
+      - name: Install ImageMagick
         shell: bash
-        run: |
-          pwd
-          ls -al
-          cd test
-          ./animate.sh ./frames_out/frames.mp4 || find / -iname "*libblas.so.*" -ls 2>/dev/null
+        run: sudo apt-get update && sudo apt-get install -y imagemagick # ffmpeg
+
+      # - name: Convert output frames from PPMs to MP4
+      #   shell: bash
+      #   run: |
+      #     pwd
+      #     ls -al
+      #     cd test
+      #     ./animate.sh ./frames_out/frames.mp4
 
       - name: Convert output frames from PPMs to PNGs
         if: success() || failure() # Run this even if the step above fails.
@@ -79,9 +77,16 @@ jobs:
         with:
           name: frames-rtl
           path: |
-            test/frames_out/frames.mp4
             test/frames_out/frames.tgz
             test/frames_out/frames.gif
+          # test/frames_out/frames.mp4
+
+      - name: Publish output files for Summary and GitHub Pages
+        if: success() || failure()
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: test/frames_out/
 
       - name: upload vcd
         if: success() || failure()
@@ -93,25 +98,29 @@ jobs:
             test/results.xml
 
   frames_preview:
-    #needs: gds
+    needs: test
     runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     permissions:
       pages: write      # to deploy to Pages
       id-token: write   # to verify the deployment originates from an appropriate source
     steps:
-      - name: Download frames
-        uses: actions/download-artifact@v4
-        with:
-          name: frames-rtl
-          path: gh-pages
+      - name: Build/deploy GitHub Pages site, for hosting content/images
+        id: deployment
+        uses: actions/deploy-pages@v4
+
       - name: Display preview in workflow summary
         shell: bash
         run: |
-          PAGE_URL=${{ steps.deployment.outputs.page_url }}
-          PAGE_URL=$(echo "$PAGE_URL" | sed -e 's/\/$//')
+          pwd
+          ls -al
+          find . -ls
+          URLBASE="${{ steps.deployment.outputs.page_url }}"
+          URLBASE=$(echo "$URLBASE" | sed -e 's/\/$//')
+          echo "URLBASE: $URLBASE"
           cat << EOF >> $GITHUB_STEP_SUMMARY
           # Animated frames preview
-          ![Animated GIF of tested frames]($PAGE_URL/frames.gif)
-
-          ![Animated GIF of tested frames]($PAGE_URL/test/frames_out/frames.gif)
+          ![Animated GIF of tested frames]($URLBASE/frames.gif)
           EOF
