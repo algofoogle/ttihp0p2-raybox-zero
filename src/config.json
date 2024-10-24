@@ -14,6 +14,9 @@
   "PLACE_DENSITY": 0.78,
   "TNS_END_PERCENT": 100,
 
+  "//": "Increase this if you are getting 'Synthesized memory size exceeds maximum allowed bits' error:",
+  "SYNTH_MEMORY_MAX_BITS": 4096,
+
   "//": "Configuration docs: https://openroad-flow-scripts.readthedocs.io/en/latest/user/FlowVariables.html",
 
   "//": "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
@@ -21,6 +24,6 @@
   "//": "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
 
   "//": "Power nets for IR drop analysis",
-  "PWR_NETS_VOLTAGES": "{VPWR 1.5}",
+  "PWR_NETS_VOLTAGES": "{VPWR 1.2}",
   "GND_NETS_VOLTAGES": "{VGND 0.0}"
 }

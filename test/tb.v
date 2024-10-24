@@ -19,10 +19,6 @@ module tb ();
   end
 `endif
 
-`ifdef GL_TEST
-  wire VPWR = 1'b1;
-  wire VGND = 1'b0;
-`endif
   // --- Named inputs controlled by test: ---
   // Universal TT07 inputs:
   reg clk;
@@ -87,13 +83,6 @@ module tb ();
                       : 1'bz;       // raybox-zero is reading (or not using).
 
   tt_um_algofoogle_raybox_zero user_project (
-
-      // Include power ports for the Gate Level test:
-`ifdef GL_TEST
-      .VPWR(1'b1),
-      .VGND(1'b0),
-`endif
-
       .ui_in  (ui_in),    // Dedicated inputs
       .uo_out (uo_out),   // Dedicated outputs
       .uio_in (uio_in),   // IOs: Input path
