@@ -36,6 +36,14 @@ module tb ();
   reg reg_sclk;
   reg reg_mosi;
   reg reg_ss_n;
+
+  // --- DUT's generic IOs from the TT wrapper ---
+  wire [7:0] ui_in;       // Dedicated inputs
+  wire [7:0] uo_out;      // Dedicated outputs
+  wire [7:0] uio_in;      // Bidir IOs: Input path
+  wire [7:0] uio_out;     // Bidir IOs: Output path
+  wire [7:0] uio_oe;      // Bidir IOs: Enable path (active high: 0=input, 1=output).
+
   // Specific outputs for raybox-zero:
   // RrGgBb and H/Vsync pin ordering is per Tiny VGA PMOD
   // (https://tinytapeout.com/specs/pinouts/#vga-output)
@@ -50,12 +58,7 @@ module tb ();
   wire tex_csb    = uio_out[0];
   wire tex_sclk   = uio_out[1];
 
-  // --- DUT's generic IOs from the TT wrapper ---
-  wire [7:0] ui_in;       // Dedicated inputs
-  wire [7:0] uo_out;      // Dedicated outputs
-  wire [7:0] uio_in;      // Bidir IOs: Input path
-  wire [7:0] uio_out;     // Bidir IOs: Output path
-  wire [7:0] uio_oe;      // Bidir IOs: Enable path (active high: 0=input, 1=output).
+  wire [2:0] tex_io;
 
   assign ui_in = {
     gen_tex,
@@ -75,8 +78,6 @@ module tb ();
     reg_sclk,
     2'b00 // Unused (outputs only).
   };
-
-  wire [2:0] tex_io;
 
   assign tex_io[0] =
     (uio_oe[5] == 1)  ? uio_out[5]  // raybox-zero is asserting an output.
