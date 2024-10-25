@@ -10,7 +10,7 @@ import re
 
 HIGH_RES        = float(env.get('HIGH_RES')) if 'HIGH_RES' in env else None # If not None, scale H res by this, and step by CLOCK_PERIOD/HIGH_RES instead of unit clock cycles.
 CLOCK_PERIOD    = float(env.get('CLOCK_PERIOD') or 40.0) # Default 40.0 (period of clk oscillator input, in nanoseconds)
-FRAMES          =   int(env.get('FRAMES')       or   10) # Default 3 (total frames to render)
+FRAMES          =   int(env.get('FRAMES')       or   12) # Default 12 (total frames to render)
 INC_PX          =   int(env.get('INC_PX')       or    1) # Default 1 (inc_px on)
 INC_PY          =   int(env.get('INC_PY')       or    1) # Default 1 (inc_py on)
 GEN_TEX         =   int(env.get('GEN_TEX')      or    0) # Default 0 (use tex ROM; no generated textures)
@@ -225,6 +225,14 @@ async def test_frames(dut):
             # Turn off floor leak:
             # Send SPI2 ('reg') command 2 (LEAK) and a corresponding value of 13:
             cocotb.start_soon(spi_send_reg(dut, 2, 0, 'turn off LEAK'))
+
+        elif nframe == 10:
+            # Turn on gen_tex (disable texture ROM; use generated textures instead):
+            dut.gen_tex.value = 1
+
+        elif nframe == 11:
+            # Turn off VINF:
+            cocotb.start_soon(spi_send_reg(dut, 5, '0', 'turn off VINF'))
 
 
         # Create PPM file to visualise the frame, and write its header:

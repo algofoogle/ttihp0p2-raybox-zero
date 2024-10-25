@@ -126,6 +126,13 @@ jobs:
           cd frames_out
           ../animate.sh frames.gif
 
+      - name: Publish output frame images for Summary and GitHub Pages
+        if: success() || failure()
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: test/frames_out/
+
       - name: Store frame output files
         if: success() || failure()
         uses: actions/upload-artifact@v4
