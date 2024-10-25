@@ -190,6 +190,13 @@ async def test_frames(dut):
         # 008. VINF enabled
         # 009. LEAK disabled
 
+        # NOTE: Each of these states are asserted at the start of the PRIOR
+        # frame since they take effect on the NEXT frame, but the exceptions are
+        # those which have an immediate combinatorial effect:
+        # - gen_tex
+        # - debug
+        # - registered_outputs
+
         # Frame 0 will render as per normal (not really controllable).
         if nframe in [1,2]:
             # Frames 1 & 2 will render per typical design behaviour.
@@ -227,13 +234,17 @@ async def test_frames(dut):
             cocotb.start_soon(spi_send_reg(dut, 2, 0, 'turn off LEAK'))
 
         elif nframe == 10:
-            # Turn on gen_tex (disable texture ROM; use generated textures instead):
-            dut.gen_tex.value = 1
+            pass # Placeholder for dut.gen_tex.value = 1 in IMMEDIATE inputs, below.
 
         elif nframe == 11:
             # Turn off VINF:
             cocotb.start_soon(spi_send_reg(dut, 5, '0', 'turn off VINF'))
 
+        # Now handle IMMEDIATE inputs that take effect on the current frame,
+        # rather than the next:
+        if frame == 10:
+            # Turn on gen_tex (disable texture ROM; use generated textures instead):
+            dut.gen_tex.value = 1 #NOTE: Immediate, so takes effect ON frame 10, not 11.
 
         # Create PPM file to visualise the frame, and write its header:
         img = open(f"frames_out/rbz_basic_frame-{frame:03d}.ppm", "w")

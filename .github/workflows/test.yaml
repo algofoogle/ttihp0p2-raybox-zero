@@ -42,14 +42,6 @@ jobs:
         shell: bash
         run: sudo apt-get update && sudo apt-get install -y imagemagick # ffmpeg
 
-      # - name: Convert output frames from PPMs to MP4
-      #   shell: bash
-      #   run: |
-      #     pwd
-      #     ls -al
-      #     cd test
-      #     ./animate.sh ./frames_out/frames.mp4
-
       - name: Convert output frames from PPMs to PNGs
         if: success() || failure() # Run this even if the step above fails.
         shell: bash
@@ -59,7 +51,7 @@ jobs:
           cd test
           mkdir frames_out/png
           cd frames_out
-          ../animate.sh png && cd png && tar czf ../frames.tgz *.png
+          ../animate.sh png && cd png && tar czf ../frames-rtl.tgz *.png
 
       - name: Convert output frames from PPMs to animated GIF
         if: success() || failure() # Run this even if the step above fails.
@@ -69,7 +61,7 @@ jobs:
           ls -al
           cd test
           cd frames_out
-          ../animate.sh frames.gif
+          ../animate.sh frames-rtl.gif
 
       - name: Store frame output files
         if: success() || failure()
@@ -77,8 +69,8 @@ jobs:
         with:
           name: frames-rtl
           path: |
-            test/frames_out/frames.tgz
-            test/frames_out/frames.gif
+            test/frames_out/frames-rtl.tgz
+            test/frames_out/frames-rtl.gif
 
       - name: Publish output files for Summary and GitHub Pages
         if: success() || failure()
@@ -121,5 +113,10 @@ jobs:
           echo "URLBASE: $URLBASE"
           cat << EOF >> $GITHUB_STEP_SUMMARY
           # Animated frames preview
-          ![Animated GIF of tested frames]($URLBASE/frames.gif)
+
+          ## From RTL:
+          ![Animated GIF of RTL-tested frames]($URLBASE/frames-rtl.gif)
+
+          ## From GL:
+          ![Animated GIF of GL-tested frames]($URLBASE/frames-gl.gif)
           EOF
