@@ -6,6 +6,7 @@ SIM ?= icarus
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(PWD)/../src
 PROJECT_SOURCES = \
+	rbz_options.v								\
 	raybox-zero/src/rtl/fixed_point_params.v	\
 	raybox-zero/src/rtl/helpers.v				\
 	raybox-zero/src/rtl/debug_overlay.v			\
