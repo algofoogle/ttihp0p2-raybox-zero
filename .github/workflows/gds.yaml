@@ -116,12 +116,12 @@ jobs:
           cd frames_out
           ../animate.sh frames-gl.gif
 
-      - name: Publish output frame images for Summary and GitHub Pages
-        if: success() || failure()
-        id: deployment
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: test/frames_out/
+      # - name: Publish output frame images for Summary and GitHub Pages
+      #   if: success() || failure()
+      #   id: deployment
+      #   uses: actions/upload-pages-artifact@v3
+      #   with:
+      #     path: test/frames_out/
 
       - name: Store frame output files
         if: success() || failure()
@@ -133,7 +133,7 @@ jobs:
             test/frames_out/frames-gl.gif
 
   viewer:
-    needs: [gds, gl_test]
+    needs: gds
     runs-on: ubuntu-24.04
     permissions:
       pages: write      # to deploy to Pages
