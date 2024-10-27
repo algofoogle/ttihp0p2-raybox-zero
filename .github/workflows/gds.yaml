@@ -143,7 +143,7 @@ jobs:
             test/frames_out/frames-gl.gif
 
   viewer:
-    needs: gds
+    needs: [gds, gl_test]
     runs-on: ubuntu-24.04
     permissions:
       pages: write      # to deploy to Pages
