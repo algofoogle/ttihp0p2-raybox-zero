@@ -24,4 +24,5 @@ export OPENROAD_EXE=/usr/bin/openroad
 export YOSYS_EXE=$TTIHP_ROOT/oss-cad-suite/bin/yosys
 source $TTIHP_ROOT/venv/bin/activate
 #NOTE: Local project ./tt/ path has https://github.com/TinyTapeout/tt-support-tools commit b176ed7cedec7dd801c5580700d4dc65d8693433
+export PDK_ROOT=$IHP_PDK_ROOT # Needed for test/
 

@@ -83,6 +83,10 @@ module tb ();
     (uio_oe[5] == 1)  ? uio_out[5]  // raybox-zero is asserting an output.
                       : 1'bz;       // raybox-zero is reading (or not using).
 
+  // assign tex_io[0] = (uio_oe[5] == 1) ? uio_out[5] : 1'b1;
+  // assign tex_io[1] = 1'b1;
+  // assign tex_io[2] = 1'b1;
+
   tt_um_algofoogle_raybox_zero user_project (
       .ui_in  (ui_in),    // Dedicated inputs
       .uo_out (uo_out),   // Dedicated outputs

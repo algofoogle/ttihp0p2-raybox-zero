@@ -1188,31 +1188,38 @@ end
  will continue.
 ******************************************************************************/
 
+// always @(posedge CSn) $display("@@@ ------- [%0t ns] +POSEDGE CSn ---------", $time);
+// always @(negedge CSn) $display("@@@ ------- [%0t ns] -NEGEDGE CSn ---------", $time);
+
 always @(posedge CSn)		   		      // When CSn goes high, device becomes in-active
 begin :disable_interface
-	#tSHQZ;						                  // Data-output disable time
-	HOLDn_Active = 1'b0;           // Disable HOLDn from mucking with output registers.
-	DO_Output_Enable = 1'b0;			    // Tri-state DO output.					
-	DIO_Output_Enable_reg = 1'b0;		// Tri-state DIO output.
-	WPn_Output_Enable_reg = 1'b0;		// Tri-state WPn output
-	HOLDn_Output_Enable = 1'b0;		  // Tri-state HOLDn output
-	flag_slow_read_reg = 1'b0;			  // Initiate normal timing checks
+	#0 if (!CSn) begin //HACK: Detect glitches where sim sees CSn SIMULTANEOUSLY going high & low again.
+		//$display("@@@ --- WARNING: False CSn rising edge at %0t ps", $time);
+	end else begin
+		#tSHQZ;						                  // Data-output disable time
+		HOLDn_Active = 1'b0;           // Disable HOLDn from mucking with output registers.
+		DO_Output_Enable = 1'b0;			    // Tri-state DO output.
+		DIO_Output_Enable_reg = 1'b0;		// Tri-state DIO output.
+		WPn_Output_Enable_reg = 1'b0;		// Tri-state WPn output
+		HOLDn_Output_Enable = 1'b0;		  // Tri-state HOLDn output
+		flag_slow_read_reg = 1'b0;			  // Initiate normal timing checks
 
-	disable input_byte;
-	disable input_byte_dual;
-	disable input_mode_dual;
-	disable input_byte_quad;
-	disable output_byte;
-	disable output_byte_dual;
-	disable output_byte_quad;
-	disable read_opcode;
-	disable write_page;
-	disable fill_page_latch;
-	disable read_page;
-	disable read_page_dualio;
-	disable read_page_quadio;
-	disable get_posclk_holdn;
-	disable get_negclk_holdn;
+		disable input_byte;
+		disable input_byte_dual;
+		disable input_mode_dual;
+		disable input_byte_quad;
+		disable output_byte;
+		disable output_byte_dual;
+		disable output_byte_quad;
+		disable read_opcode;
+		disable write_page;
+		disable fill_page_latch;
+		disable read_page;
+		disable read_page_dualio;
+		disable read_page_quadio;
+		disable get_posclk_holdn;
+		disable get_negclk_holdn;
+	end
 end
 
 /******************************************************************************
