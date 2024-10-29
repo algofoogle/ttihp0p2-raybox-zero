@@ -48,6 +48,8 @@ module tt_um_algofoogle_raybox_zero (
   wire o_tex_oeb0;
   wire [3:0] i_tex_in = {1'b0, uio_in[7:5]}; //NOTE: io[3] is unused, currently.
 
+  wire debug = ui_in[3];
+
   rbzero rbzero(
     .clk        (clk),
     .reset      (~rst_n),
@@ -70,9 +72,9 @@ module tt_um_algofoogle_raybox_zero (
     .i_tex_in   (i_tex_in), //NOTE: io[3] is unused, currently.
     
     // Debug/demo signals:
-    .i_debug_m  (1'b0), // Map debug overlay
-    .i_debug_t  (1'b0), // Trace debug overlay
-    .i_debug_v  (ui_in[3]), // Vectors debug overlay
+    .i_debug_m  (debug), // Map debug overlay
+    .i_debug_t  (debug), // Trace debug overlay
+    .i_debug_v  (debug), // Vectors debug overlay
     .i_inc_px   (ui_in[4]),
     .i_inc_py   (ui_in[5]),
     .i_gen_tex  (ui_in[7]), // 1=Use bitwise-generated textures instead of SPI texture memory.
