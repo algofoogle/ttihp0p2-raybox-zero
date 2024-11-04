@@ -39,21 +39,18 @@ def check_uio_out(dut):
 # This can represent hard-wired stuff:
 def set_default_start_state(dut):
     dut.ena.value                   = 1
-    # POV SPI interface inactive:
-    dut.pov_sclk.value              = 1
-    dut.pov_mosi.value              = 1
-    dut.pov_ss_n.value              = 1
-    # REG SPI interface also inactive:
-    dut.reg_sclk.value              = 1
-    dut.reg_mosi.value              = 1
-    dut.reg_ss_n.value              = 1
+    # REG SPI interface inactive:
+    dut.spi_sclk.value              = 1
+    dut.spi_mosi.value              = 1
+    dut.spi_csb.value               = 1
     # Enable debug display on-screen?
     dut.debug.value                 = DEBUG_POV
     # Enable demo mode(s) (player position auto-increment)?
     dut.inc_px.value                = INC_PX
     dut.inc_py.value                = INC_PY
     # Use generated textures instead of external texture SPI memory?
-    dut.gen_tex.value               = GEN_TEX
+    dut.tex_pmod_type.value         = 1 # Digilent SPI PMOD.
+    dut.gen_texb.value              = not GEN_TEX
     # Present registered outputs?
     dut.registered_outputs.value    = REG
 
@@ -62,16 +59,16 @@ class SPI:
     def __init__(self, dut, interface):
         self.dut = dut
         self.interface = interface
-        if interface == 'pov':
-            self.csb = dut.pov_ss_n
-            self.sclk = dut.pov_sclk
-            self.mosi = dut.pov_mosi
-        elif interface == 'reg':
-            self.csb = dut.reg_ss_n
-            self.sclk = dut.reg_sclk
-            self.mosi = dut.reg_mosi
+        if interface == 'reg':
+            self.csb  = dut.spi_csb
+            self.sclk = dut.spi_sclk
+            self.mosi = dut.spi_mosi
+        # elif interface == 'pov':
+        #     self.csb = dut.pov_ss_n
+        #     self.sclk = dut.pov_sclk
+        #     self.mosi = dut.pov_mosi
         else:
-            raise ValueError(f"Invalid interface {repr(interface)}; must be 'pov' or 'reg'")
+            raise ValueError(f"Invalid interface {repr(interface)}; must be 'reg'")
 
     def __repr__(self):
         return f'SPI({self.interface})'
@@ -124,11 +121,21 @@ async def spi_send_reg(dut, cmd, data, what=''):
 
 async def spi_send_pov(dut, data, what=''):
     dut._log.info(f"spi_send_pov({repr(data)}) started [{what}]...")
-    spi = SPI(dut, 'pov')
+    spi = SPI(dut, 'reg')
     await spi.txn_start()
+    await spi.txn_send(11, 4) # 11==CMD_POV
     await spi.txn_send(data, 74)
     await spi.txn_stop()
     dut._log.info(f"spi_send_pov() [{what}] DONE")
+
+
+# async def spi_send_pov(dut, data, what=''):
+#     dut._log.info(f"spi_send_pov({repr(data)}) started [{what}]...")
+#     spi = SPI(dut, 'pov')
+#     await spi.txn_start()
+#     await spi.txn_send(data, 74)
+#     await spi.txn_stop()
+#     dut._log.info(f"spi_send_pov() [{what}] DONE")
 
 
 @cocotb.test()
@@ -226,7 +233,7 @@ async def test_frames(dut):
 
         elif nframe == 8:
             # Turn on VINF (cmd 5) mode:
-            cocotb.start_soon(spi_send_reg(dut, 5, '1', 'turn on VINF')) # '1' because we have a SINGLE bit to send.
+            cocotb.start_soon(spi_send_reg(dut, 5, '10', 'turn on VINF, turn off LEAK_FIXED')) # '10' because we're sending a short payload.
 
         elif nframe == 9:
             # Turn off floor leak:
@@ -238,13 +245,13 @@ async def test_frames(dut):
 
         elif nframe == 11:
             # Turn off VINF:
-            cocotb.start_soon(spi_send_reg(dut, 5, '0', 'turn off VINF'))
+            cocotb.start_soon(spi_send_reg(dut, 5, '00', 'turn off VINF, turn off LEAK_FIXED'))
 
         # Now handle IMMEDIATE inputs that take effect on the current frame,
         # rather than the next:
         if frame == 10:
             # Turn on gen_tex (disable texture ROM; use generated textures instead):
-            dut.gen_tex.value = 1 #NOTE: Immediate, so takes effect ON frame 10, not 11.
+            dut.gen_texb.value = 0 #NOTE: Immediate, so takes effect ON frame 10, not 11.
 
         # Create PPM file to visualise the frame, and write its header:
         img = open(f"frames_out/rbz_basic_frame-{frame:03d}.ppm", "w")

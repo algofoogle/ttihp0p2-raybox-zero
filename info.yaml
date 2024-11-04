@@ -1,11 +1,11 @@
 # Tiny Tapeout project information
 project:
-  title:        "raybox-zero TTIHP0p2 edition"      # Project title
-  author:       "algofoogle (Anton Maurovic)"      # Your name
-  discord:      "algofoogle"      # Your discord username, for communication and automatically assigning you a Tapeout role (optional)
+  title:        "raybox-zero TTIHP0p2 edition"
+  author:       "algofoogle (Anton Maurovic)"
+  discord:      "algofoogle"
   description:  "TTIHP0p2 experimental resub of 'simple VGA ray caster game demo' from TT07"      # One line description of what your project does
-  language:     "Verilog" # other examples include SystemVerilog, Amaranth, VHDL, etc
-  clock_hz:     25175000       # Clock frequency in Hz (or 0 if not applicable)
+  language:     "Verilog"
+  clock_hz:     25_175_000  # Clock frequency in Hz (or 0 if not applicable)
 
   # How many tiles your design occupies? A single tile is about 167x108 uM.
   tiles: "6x2"          # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2 or 6x2
@@ -16,7 +16,7 @@ project:
   # List your project's source files here.
   # Source files must be in ./src and you must list each source file separately, one per line.
   # Don't forget to also update `PROJECT_SOURCES` in test/Makefile.
-  source_files:        
+  source_files:
     - rbz_options.v
     - raybox-zero/src/rtl/fixed_point_params.v
     - raybox-zero/src/rtl/helpers.v
@@ -25,47 +25,52 @@ project:
     - raybox-zero/src/rtl/debug_overlay.v
     - raybox-zero/src/rtl/map_overlay.v
     - raybox-zero/src/rtl/map_rom.v
-    - raybox-zero/src/rtl/pov.v
     - raybox-zero/src/rtl/lzc.v
     - raybox-zero/src/rtl/reciprocal.v
     - raybox-zero/src/rtl/wall_tracer.v
     - raybox-zero/src/rtl/row_render.v
     - raybox-zero/src/rtl/vga_mux.v
     - raybox-zero/src/rtl/vga_sync.v
-    - raybox-zero/src/rtl/top_raybox_zero_fsm.v
     - project.v
+    # - raybox-zero/src/rtl/top_raybox_zero_fsm.v
+    # - raybox-zero/src/rtl/pov.v
 
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
 pinout:
-  # Inputs
-  ui[0]: 'SPI in: pov_sclk'
-  ui[1]: 'SPI in: pov_mosi'
-  ui[2]: 'SPI in: pov_ss_n'
-  ui[3]: debug
-  ui[4]: inc_px
-  ui[5]: inc_py
-  ui[6]: reg
-  ui[7]: gen_tex
+    # Inputs:
+    ui[0]: spi_sck
+    ui[1]: spi_sdi  # aka MOSI
+    ui[2]: spi_csb  # aka ss_n
+    ui[3]: debug    # Show debug overlays on screen?
+    ui[4]: inc_px   # Increment px
+    ui[5]: inc_py   # Increment py
+    ui[6]: reg      # Present registered or unregistered outputs?
+    ui[7]: tex_pmod_type
+    #NOTE: For texture_pmod_type:
+    #   0=Moser's QSPI PMOD; can have a weak pull-up on uio[5] (io3), and ensure io3 bits are 1 in ROM to avoid GEN_TEXb. NOTE: Looks like there are jumpers to enable/disable the chips...?
+    #   1=Digilent SPI PMOD; hence expect uio[5] (RSTb) is weakly pulled up anyway, but can be pulled low for GEN_TEXb instead.
 
-  # Outputs: Tiny VGA PMOD (https://tinytapeout.com/specs/pinouts/#vga-output)
-  uo[0]: red[1]
-  uo[1]: green[1]
-  uo[2]: blue[1]
-  uo[3]: vsync_n
-  uo[4]: red[0]
-  uo[5]: green[0]
-  uo[6]: blue[0]
-  uo[7]: hsync_n
+    # Outputs: Tiny VGA PMOD (https://tinytapeout.com/specs/pinouts/#vga-output)
+    uo[0]: red[1]
+    uo[1]: green[1]
+    uo[2]: blue[1]
+    uo[3]: vsync_n
+    uo[4]: red[0]
+    uo[5]: green[0]
+    uo[6]: blue[0]
+    uo[7]: hsync_n
 
-  # Bidirectional pins
-  uio[0]: 'Out: tex_csb'
-  uio[1]: 'Out: tex_sclk'
-  uio[2]: 'In: "SPI2" reg_sclk'
-  uio[3]: 'In: "SPI2" reg_mosi'
-  uio[4]: 'In: "SPI2" reg_ss_n'
-  uio[5]: 'I/O: tex_io0'
-  uio[6]: 'In: tex_io1'
-  uio[7]: 'In: tex_io2'
+    # Bidirectional pins
+    #NOTE: The following are compatible with https://digilent.com/reference/pmod/pmodsf3/start
+    ######## type=1           type=0
+    uio[0]: 'Out: digilent_tex_csb   / Out: moser_tex_csb'
+    uio[1]: 'I/O: digilent_tex_io0   / I/O: moser_tex_io0'
+    uio[2]: 'In:  digilent_tex_io1   / In:  moser_tex_io1'
+    uio[3]: 'Out: digilent_tex_sclk  / Out: moser_tex_sclk'
+    uio[4]: 'In:  SPARE              / In:  moser_tex_io2'
+    uio[5]: 'In:  gen_texb           / In:  moser_tex_io3'     # aka GEN_TEXb, aka use_texture_spi
+    uio[6]: 'In:  digilent_tex_io2   / N/A: moser_CS1'         # For RBZ with type==0 make it output 1 (disable RAM A)?
+    uio[7]: 'In:  digilent_tex_io3   / N/A: moser_CS2'         # For RBZ with type==0 make it output 1 (disable RAM B)? Otherwise unused for type==1, or MAYBE SPARE
 
 # Do not change!
 yaml_version: 6
