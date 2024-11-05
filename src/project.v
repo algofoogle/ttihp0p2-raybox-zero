@@ -40,8 +40,6 @@ module tt_um_algofoogle_raybox_zero (
 
   always @(posedge clk) registered_vga_output <= unregistered_vga_output;
 
-  assign uo_out = i_reg ? registered_vga_output : unregistered_vga_output;
-
   wire [9:0] hpos, vpos;
 
   wire spi_sclk       = ui_in[0];
@@ -80,6 +78,7 @@ module tt_um_algofoogle_raybox_zero (
     ~uio_in[5] :  // gen_tex (actually gen_texb) can be used in 'Digilent SPI PMOD'-mode.
     1'b0;         // Disable gen_tex when using Moser's QSPI PMOD.
 
+  assign uo_out = i_reg ? registered_vga_output : unregistered_vga_output;
 
   rbzero rbzero(
     .clk        (clk),

@@ -76,17 +76,13 @@ module tb ();
   assign uio_in[2] = tex_io[1];
   assign uio_in[3] = 1'b0; // output only
   assign uio_in[4] = 1'b0; // SPARE input
-  assign uio_in[5] = 1'b0; // gen_texb
+  assign uio_in[5] = gen_texb;
   assign uio_in[6] = tex_io[2];
   assign uio_in[7] = 1'b0; // UNUSED tex_io[3];
 
   assign tex_io[0] =
-    (uio_oe[5] == 1)  ? uio_out[5]  // raybox-zero is asserting an output.
+    (uio_oe[1] == 1)  ? uio_out[1]  // raybox-zero is asserting an output.
                       : 1'bz;       // raybox-zero is reading (or not using).
-
-  // assign tex_io[0] = (uio_oe[5] == 1) ? uio_out[5] : 1'b1;
-  // assign tex_io[1] = 1'b1;
-  // assign tex_io[2] = 1'b1;
 
   tt_um_algofoogle_raybox_zero user_project (
       .ui_in  (ui_in),    // Dedicated inputs

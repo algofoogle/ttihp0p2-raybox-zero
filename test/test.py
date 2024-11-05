@@ -34,7 +34,7 @@ Test parameters (can be overridden using ENV vars):
 def check_uio_out(dut):
     # Make sure 2 LSB are outputs,
     # and all but [5] (bidir) of the rest are inputs:
-    assert re.match('00.00011', dut.uio_oe.value.binstr)
+    assert re.match('000010.1', dut.uio_oe.value.binstr)
 
 # This can represent hard-wired stuff:
 def set_default_start_state(dut):
